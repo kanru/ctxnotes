@@ -1,0 +1,211 @@
+\startenvironment doc-env
+
+\usemodule[chart]
+\usemodule[t][layout]
+\usemodule[bib]
+
+\usetypescriptfile[zhfonts]
+\usetypescript[myfont]
+\setupbodyfont[myfont,rm,11pt]
+
+\setupcolors[state=start]
+\definecolor[bg][gray]
+\definecolor[ornament][r=.40,g=.60,b=.20]
+\definecolor[mydarkred][r=.60,g=.20,b=.20]
+
+\setupinteraction[state=start,color=mydarkred,
+        title={ConTeXt 學習筆記},
+        subtitle={Using MkIV},
+        author={Li Yanrui},
+        keyword={TeX, ConTeXt, MkIV, LuaTeX}]
+
+%%%%%%%%%%%%%%%%%% Begin print mode %%%%%%%%%%%%%%%%%%%%%%%%%%
+\startmode[print]
+        \setuppapersize[A4][A4]
+        \setuplayout[leftmargin=2cm,rightmargin=3cm,width=fit,height=fit,
+			 topspace=1cm,header=1.5cm,footer=1.5cm,marking=on]
+        \definepagebreak
+                [mychapterpagebreak]
+	        [yes,header,footer,right]
+        \setuphead[chapter]
+                [page=mychapterpagebreak]
+        \setuppagenumbering[alternative=doublesided,style=\tfx,location=]
+\stopmode
+%% End print mode %%
+
+%% Begin screen mode %%
+\startmode[screen]
+\definepapersize[SCREEN][width=24cm,height=18cm]
+\setuppapersize[SCREEN][SCREEN]
+\setuplayout[width=fit,height=middle,
+             leftmargin=3cm,rightmargin=3cm,
+             backspace=4cm,topspace=.5cm,
+             headerdistance=.4cm,footerdistance=.4cm,
+             header=1cm,footer=1cm]
+\setuppagenumbering[style=\tfx,location=]
+\startuseMPgraphic{CommonMP}
+    path p;
+
+    shift := 6pt;
+    grid_w := \the\pagewidth-shift; grid_h := \the\pageheight-shift;
+
+    resolv_x := .05*grid_w;
+    resolv_y := .05*grid_h;
+
+    cell_w := .85*resolv_x; cell_h := .85*resolv_y;
+
+    random :=.4*cell_h;
+
+    offset_x := .5*(resolv_x - cell_w + shift);
+    offset_y := .5*(resolv_y - cell_h + shift);
+
+    % 繪製背景
+    for i=0 step resolv_x until grid_w:
+        for j=0 step resolv_y until grid_h:
+                p := unitsquare xyscaled (cell_w, cell_h) 
+                     randomized random  shifted (i+offset_x,j+offset_y);
+                fill p withcolor \MPcolor{bg};
+                draw p withcolor \MPcolor{ornament};
+        endfor;
+    endfor;
+\stopuseMPgraphic
+
+\startuniqueMPgraphic{CoverBackground}
+    StartPage;
+    \includeMPgraphic{CommonMP}
+    p := Page enlarged (-1.2*cell_w,-1.2*cell_h) squeezed (4pt,4pt);
+    draw p withcolor \MPcolor{ornament} withpen pencircle scaled 2pt;
+    StopPage;
+\stopuniqueMPgraphic
+
+\defineoverlay[CoverBackground][\uniqueMPgraphic{CoverBackground}]
+\def\CoverBackground{\setupbackgrounds[page][background=CoverBackground]}
+
+\startuseMPgraphic{BodyBackground}
+    StartPage;
+	\includeMPgraphic{CommonMP}
+    p := Page enlarged (-1.2*cell_w,-1.2*cell_h) squeezed (4pt,4pt);
+    fill p withcolor \MPcolor{white};
+    draw p withcolor \MPcolor{ornament};
+    StopPage;
+\stopuseMPgraphic
+
+\defineoverlay[BodyBackground][\useMPgraphic{BodyBackground}]
+\def\BodyBackground{\setupbackgrounds[page][background=BodyBackground]}
+
+\stopmode
+
+%% End screen mode %%
+
+
+% 圖片目錄
+\setupexternalfigures[directory={./figures}]
+
+%-------- 標題設置 --------
+\setupheads[indentnext=yes]
+
+\setuphead[title][style=\bfb,header=empty,foote=empty]
+\setuphead[chapter]
+          [style=\bfb,header=empty,footer=empty]
+\setuphead[section][style=\bfa]
+\setuphead[subsubject][style=\bf]
+
+% 代碼環境
+\setuptyping[option=color,palet=graypretty,margin=2em,
+			 before={\blank[.5em]\setupinterlinespace[medium]},
+        	 after={\blank[.5em]}]
+
+\definetyping[niceTEX][option=TEX,palet=graypretty]
+
+%-------- 中文化 --------
+\setuplabeltext [en] [chapter={第\;,\;章}]
+\setuplabeltext [en] [figure=圖\;]
+\setuplabeltext [en] [table=表\;]
+\setupheadtext[en][pubs={\bfc 參考文獻}]
+\setupheadtext[en][content={\bfc 目錄}]
+
+%% 目錄 %%
+\def\ChapterNumber#1{\doiftext{#1}{第\;#1\;章\quad}}
+\setuplist
+    [chapter]
+    [alternative=a,
+     before={\page[preference]\blank},
+     after=\blank,
+     style=\bfx,
+     width=fit,
+     pagestyle=boldslanted,
+     pagenumber=no,
+     numbercommand=\ChapterNumber]
+
+\def\Number#1{\$ #1}
+\def\PageNumber#1{\color[darkgray]{#1}.}
+\setuplist
+    [section]
+    [alternative=d,
+     style=small,
+     numbercommand=\Number,
+     pagecommand=\PageNumber,
+     pagestyle=\itx]
+
+% 頁眉頁腳
+\startsetups HeaderFooter
+        \def\CurrentChapter{%
+                第 \headnumber[chapter]\ 章%
+                \hbox to 2em{}%
+                \getmarking[chapter]%
+                }
+        \def\CurrentSection{%
+                \headnumber[section]%
+                \hbox to 2em{}%
+                \getmarking[section]%
+                }
+        \setupheadertexts
+                [\CurrentChapter][pagenumber]
+                [pagenumber][\CurrentSection]
+        \startmode[screen]
+                \setupfootertexts[{\ConTeXt\ 學習筆記}][{\goto{\bfx 回目錄}[Content]}]
+                	           [{\goto{\bfx 回目錄}[Content]}][{\ConTeXt\ 學習筆記}]
+        \stopmode
+        \setupheader[style=\bfx,color=darkgray]
+        \setupfooter[style=\bfx,color=darkgray]
+\stopsetups
+
+% 書籤
+\setupinteractionscreen[option=bookmark]
+\placebookmarks[chapter,section][chapter]
+
+% 參考文獻
+\setupbibtex[database=references]
+\setuppublications[alternative=num]
+
+\setuppublicationlayout[booklet]{%
+   \insertauthors{}{\unskip.}{}%
+   \inserttitle{ \bgroup\it }{\/\egroup\unskip.}{}%
+   \insertbiburl{ URL: }{\unskip.}{}%
+   \insertnote{ }{\unskip.}{}}
+
+\setuppublicationlayout[manual]{%
+   \insertauthors{}{\unskip.}{}%
+   \inserttitle{ \bgroup\it }{\/\egroup\unskip.}{}%
+   \insertbiburl{ URL: }{\unskip.}{}%
+   \insertnote{ }{\unskip.}{}}
+
+%---- 其它一些零碎設置 ----
+\setupinterlinespace[big]
+\setupindenting[always,first,2em]
+
+\setupfloats[indentnext=yes] 
+\setupcaptions[style=\tfx, headstyle=\normal]
+
+\definesymbol[1][$\textbullet$]
+\setupitemize[each][packed, joinedup,serried][symbol=1, margin=2em]
+
+\setupfootnotes[way=bychapter]
+
+\setupinmargin[left,right][style=\tfx]
+
+\definedescription[definition]
+        [location=top,hang=20,width=broad,indenting=always,style=\ss,headstyle=\bf]
+
+\stopenvironment
+

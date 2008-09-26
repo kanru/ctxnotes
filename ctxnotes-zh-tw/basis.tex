@@ -1,0 +1,234 @@
+\startcomponent basis
+\product ctxnotes
+
+\chapter{讓 \CONTEXT\ 工作起來}
+\bookmark{讓 ConTeXt 工作起來}
+
+目前，只有 \ConTeXt\ Minimals（\ConTeXt\ 最小包）提供了最新的 ConTeXt 版本並且可以使之與系統所安裝的其它 TeX 發行版友好共存。本章介紹 \ConTeXt\ Minimals 的安裝、基本使用以及 MkIV 的中文支持等知識，目的在於讓你多快好省地擁有一個 \CONTEXT\ 文檔編譯環境。本章的最後介紹了一些初學者應當閱讀的文檔以及一些學習資源。
+
+\section[installmkiv]{\ConTeXt\ Minimals}
+\bookmark{ConTeXt Minimals}
+
+首先，在本地機器上創建一個 \ConTeXt\ 安裝目錄，該目錄的位置與名字視個人嗜好而定，我喜歡用 \type{/opt/context}。為了不引起混亂，下文提及 \ConTeXt\ 安裝目錄皆以如下設定的 Bash 變量 \type{$CTXDIR} 代替：
+
+\starttyping
+$ export CTXDIR=/opt/context
+$ mkdir -p $CTXDIR
+\stoptyping
+
+然後下載 ConTeXt 最小包安裝腳本，將其存放於 \type{$CTXDIR} 目錄並執行：
+
+\starttyping
+$ cd $CTXDIR
+$ rsync -ptv \
+rsync://contextgarden.net/minimals/setup/linux/first-setup.sh .
+$ ./first-setup.sh
+\stoptyping
+
+由於安裝腳本需要聯網下載 \ConTeXt\ Minimals，需要等待一段時間才可以完成安裝。這段時間，你可以做點自己喜歡做的事情。
+
+\ConTeXt\ Minimals 安裝完畢後，就開始進行 \ConTeXt\ 運行環境的配置，這需要設置許多的系統環境變量。不過莫要擔心，\ConTeXt\ Minimals 提供了一個配置腳本，使用 source（亦稱點命令）命令加載該文件即可完成所有 \ConTeXt\ 所需環境變量的設定。
+
+\starttyping
+$ . $CTXDIR/tex/setuptex $CTXDIR/tex
+\stoptyping
+
+上述命令行可將 setuptex 配置文件中的諸多環境變量的設定在當前終端環境中保持有效性。這意味著，每次使用 \ConTeXt\ Minimals，可以開一個終端窗口，然後執行一次上述命令，之後就可以在該終端中使用 \ConTeXt\ 環境。如果需要使用系統所安裝的其它 \TeX\ 發行套件，可另建一個未開啟 \ConTeXt\ 環境的終端即可。
+
+雖然每次啟用 \ConTeXt\ Minimals 所輸入的命令行並不複雜，但是盡力讓命令行簡約且易於輸入一向是 Unix-like 系統的光榮傳統，因此我在 \type{$HOME/myscript} 目錄下建立了一個配置文件 ctx，該文件內容如下：
+
+\starttyping
+export TEXDIR=/opt/context/tex
+source $TEXDIR/setuptex $TEXDIR
+export OSFONTDIR="/usr/share/fonts/{adobe,winfonts}"
+\stoptyping
+
+然後將 \type{$HOME/myscript} 目錄添加到系統環境變量 \type{$PATH} 並使之生效：
+
+\starttyping
+$ echo "PATH=$PATH:$HOME/myscript" >> ~/.bashrc
+$ . ~/.bashrc
+\stoptyping
+
+這樣，以後每次啟用 \ConTeXt\ 環境時，只需執行以下命令：
+
+\starttyping
+$ . ctx
+\stoptyping
+
+注意，在 ctx 文件中設置了 \type{$OSFONTDIR} 變量，該變量的意義在下一章講述 MkIV 中文排版時會進行詳細闡述，現在可不予理會。
+
+使用 \type{ctxtools} 命令並配合 \type{-updatecontext} 參數可對所安裝的 \ConTeXt\ Minimals 進行在線升級，不過前提是要建立 \type{$TEXMFLOCAL} 目錄。因為 \ConTeXt\ Minimals 升級包是一個 zip 壓縮檔，升級時會將該壓縮檔下載到 \type{$TEXMFLOCAL} 目錄並進行解壓縮。
+
+\CONTEXT\ Minimals 的升級很簡單，那就是再重裝一遍。
+
+\section{若需要 \TeX\ 與 \LaTeX}
+\bookmark{若需要 TeX 與 LaTeX}
+
+\ConTeXt\ Minimals 可以與其它 \TeX\ 發行套件友好共存。最近，我打算使用 \XeTeX\ + plain \TeX\ 格式寫一份文檔，但是 \ConTeXt\ Minimals 默認未提供 \XeTeX\ 的 plain \TeX\ 格式並且缺乏一些 plain \TEX\ 必須的字體，因此基於 \XeTeX\ 的 plain \TEX\ 及 \LATEX\ 環境均無法正常運行。對於這個問題，我能想到的比較輕省的解決方案是安裝一個 \TeX\ Live 2008，使用它所包含的 plain \TeX\ 環境，另外再安裝一個 \LATEX\ 環境以備不時之需。
+
+首先從清華的 CTAN 鏡像 FTP 服務器下載 \TEX\ Live 2008 的網絡安裝程序並解包：
+
+\starttyping
+$ wget ftp://ftp.tsinghua.edu.cn/mirror/CTAN/systems/texlive/\
+tlnet/tldev/install-tl-unx.tar.gz
+$ tar -zxvf install-tl-unx.tar.gz && cd install-tl-unx
+\stoptyping
+
+\TEX\ Live 2008 的安裝程序兼顧了不同用戶的軟件使用習慣，同時提供了文本界面與圖形界面兩種安裝模式：
+
+\starttyping
+$ install-tl    # 文本界面安裝
+$ install-tl --gui # 圖形界面安裝模式
+\stoptyping
+
+\type{install-tl} 程序在運行時會自動訪問預設定的 CTAN 鏡像 FTP 服務器，如果連接失敗，安裝過程也就終止了。對於國內用戶，可以通過 \type{--location} 參數將 CTAN 鏡像服務器設為清華的 FTP：
+
+\starttyping
+$ install-tl --location=ftp://ftp.tsinghua.edu.cn/\
+mirror/CTAN/systems/texlive/tlnet/tldev
+\stoptyping
+
+如果網速足夠，那麼應當很快就可以在終端中顯示文本安裝界面了，具體的安裝過程應當參考 \TEX\ Live 2008 中文指南\footnote{http://tug.org/texlive/doc/texlive-zh-cn/}。\TEX\ Live 2008 成功安裝後，只要不在終端中開啟 \ConTeXt\ Minimals 的 \ConTeXt\ 環境，就不會影響它的使用。
+
+\section[helloworld]{Hello World}
+
+將下面代碼使用文本編輯器保存為 hello-world.tex 文件，這就是一個最簡單的 \ConTeXt\ 源文檔。
+
+\starttyping
+% hello-world.tex
+\starttext
+Hello World.
+\stoptext
+\stoptyping
+
+我們可以在終端中使用 \type{context} 命令將這份源文檔編譯、輸出為 PDF 文檔：
+
+\starttyping
+$ . ctx
+$ context hello-world
+\stoptyping
+
+上述命令將在當前目錄產生 hello-world.pdf 文檔，使用 PDF 閱讀器查看它，可以看到文檔中除了「Hello World.」字串之外，就剩下一個置於頂端的頁碼了。
+
+在編譯 hello-world.tex 時，生成了許多中間文件，如果你不喜歡看到它們，可以使用以下命令將其清除：
+
+\starttyping
+$ context --purge
+\stoptyping
+
+\section{\TeX\ 與 \ConTeXt\ 的關係}
+\bookmark{TeX 與 ConTeXt 的關係}
+
+在上一節 hello-world.tex 文檔的編譯過程中，我們可以獲得的直觀認識如下圖所示：
+
+\setupFLOWcharts[nx=3,ny=1,
+  dx=2\bodyfontsize,dy=4\bodyfontsize,
+  width=8\bodyfontsize, height=4\bodyfontsize,
+  maxwidth=.9\textwidth]
+
+\startFLOWchart[context-flow]
+
+\startFLOWcell
+\name{texfile}\location{1,1}\shape{singledocument}
+\text{\ConTeXt\ 源文檔}
+\connection[rl]{context}
+\stopFLOWcell
+
+\startFLOWcell
+\name{context}\location{2,1}\shape{}
+\text{\ConTeXt\ 程序}
+\connection[rl]{pdf}
+\stopFLOWcell
+
+\startFLOWcell
+\name{pdf}\location{3,1}\shape{singledocument}
+\text{PDF 文檔}
+\stopFLOWcell
+
+\stopFLOWchart
+
+\placefigure[force][fig:context-flow]{\ConTeXt\ 文檔編譯過程的直觀認識}
+            {\FLOWchart[context-flow]}
+
+實際上是沒有所謂的「\ConTeXt\ 程序」的，真正實現 \TeX\ 文檔編譯的的是 \TeX\ 引擎。在 \ConTeXt\ MkIV 中，\type{context} 程序只是一個腳本文件，只有一行代碼：
+
+\starttyping
+mtxrun --script context "$@"
+\stoptyping
+
+\type{mtxrun} 是一個 Lua 腳本，它需要調用 \LUATEX\ 引擎並讀入 cont-en.fmt 文件才可以對 \ConTeXt\ 文檔進行編譯處理。cont-en.fmt 是 \ConTeXt\ 的格式文件，可以將它理解為一本詞典，當編譯 \ConTeXt\ 文檔時，Lua\TeX\ 引擎遇到文檔中的排版命令時，就去 cont-en.fmt 文件中查找這些排版命令的定義並依命行事。可還記得 2.3 節中使用 \type{context --make} 命令麼？這個命令就是用於產生 cont-en.fmt 之類的格式文件的。這就是為什麼我們經常說 \ConTeXt\ 或 \LaTeX\ 是 \TeX\ 的一種格式的原因。
+
+\section{讓 MkIV 講中文}
+
+要讓 \ConTeXt\ MkIV 講中文，首先要讓它能夠找到中文字體所在。還記得 \in{}[installmkiv]\ 節中我們寫的那個 \ConTeXt\ 環境配置文件 ctx 麼？其中有一行代碼如下：
+
+\starttyping
+export OSFONTDIR="/usr/share/fonts/{adobe,winfonts}"
+\stoptyping
+
+\type{$OSFONTDIR} 可以讓 Lua\TeX\ 知道系統所安裝的字體所在。
+
+我在 \type{/usr/share/fonts/adobe} 目錄中存放了 4 款 Adobe OTF 中文字體，在 \type{/usr/share/fonts/winfonts} 目錄中存放了一些從 Windows XP 中複製過來的一些中文字體。
+
+有了中文字體，還需要一份字體配置文件。\ConTeXt\ 提供了一套比較高級的字體機制，叫做 Typescript，它可以設置三種字型：襯線 (Serif)、非襯線 (Sans)與等寬 (Mono) 字型。這三種字型均為英文字體機制中的術語，就像我們中文字體有楷體、宋體、黑體等類型一樣。\ConTeXt\ 的 Typescript 機制牽涉太多的字體知識，對它們的詳細描述已超出我之所能，這裡僅給出一份我照貓畫虎搞出來的的一份字體配置文件——\type{zhfonts.tex}，它是隨這份文檔一起發佈的，只需將它放到 \type{TEX} 目錄樹中，譬如：
+
+\startniceTEX
+$ mkdir -p $TEXMFLLOCAL/tex/context/third
+$ mv zhfonts.tex $TEXMFLLOCAL/tex/context/third
+\stopniceTEX
+
+\noindent 然後執行：
+
+\starttyping
+$ context --generate
+\stoptyping
+
+\noindent 刷新一下文檔數據庫，就可以使用該字體配置文件了。
+
+在 zhfonts.tex 中，我使用了 AdobeSongStd-Light、AdobeHeitiStd-Regular 以及 AdobeKaitiStd-Regular 字體作為主要的中文字體。如果你沒有這些字體，可以將其替換為其它 TTF 或 OpenType 中文字體，但是要保證 \LUATEX\ 可以找到它們。由於中文字體所包含的英文字形通常比較醜陋，因此在 zhfonts.tex 文件中利用了 MkIV 的虛擬字體機制，將 lmroman10-regular、lmsans10-regular、lmmono10-regular、lmmono10-italic 以及它們的粗體的英文字形區域分別注入到相應的中文字體中。
+
+現在，將 \in[helloworld] 節中的 hello-world.tex 文檔修改為：
+
+\startTEX
+\usetypescriptfile[zhfonts]
+\usetypescript[myfont]
+\setupbodyfont[myfont,rm,11pt]
+\starttext
+世界，你好！
+\stoptext
+\stopTEX
+
+重新編譯這份文檔，即可得到中文版的 hello-world.pdf 文檔。
+
+\tex{usetypescriptfile} 命令用於加載 typescript 文件，要求 typescript 文件與 helloworld.tex 文件均在同一目錄或者前者位於 \ConTeXt\ Minimals 的某個可以檢索到的目錄中。
+
+\tex{usetypescript} 命令表示使用 typescript 文件中定義的 typeface。所謂 typeface，就是一個字型族。在 zhfonts.tex 文件中所定義的 typeface為 myfont，該字型族包含了 3 種字型：Serif、Sans 與 Mono。\tex{setupbodyfont} 命令是用於定義 hello-world.tex 文檔的默認字體，也就是正文字體，這裡是將 myfont 字型族中的 Serif 字型作為文檔的默認字體，並且默認尺寸為 11pt。
+
+現在，MkIV 基本上已經解決了中文排版問題，我們應當為此感謝 Hans、Taco 等開發者的辛勤勞動。另外，還要感謝 Wang Yue、SDE 諸位同學，他們提出了許多有關 \ConTeXt\ 中文支持的要求並報告了許多 bug。特別是 Wang Yue 同學，自去年始，一直在關注 Lua\TeX\ \& \ConTeXt\ MkIV 等項目的發展，並積極地與開發者們溝通，使得開發者認真考慮了有關中文處理的諸多需求。
+
+\section{開始 \ConTeXt\ 的旅程}
+
+\ConTeXt\ MkIV 中文支持的成功嘗試，奠定了我開始學習 \ConTeXt\ 的信心。\CONTEXT\ 的文檔非常豐富，不過大部分都是英文的，這多少讓我有點沮喪。雖然讀英文文檔不是什麼大障礙，但是總沒有中文文檔來得親切。現狀如此，只好忍了。
+
+目前，\ConTeXt\ 的大多數文檔是針對 MkII 版本的，除了 MkIV 手冊之外，似乎再也沒有其它文檔來講述 MkIV 的應用。不過，由於 MkIV 改變的主要是 \CONTEXT\ 底層，用戶界面基本上沒有改變，對於中文用戶而言，基本上只需將 MkII 的中文字體支持機制改換為 MkIV 的即可，這樣原來適用於 MkII 的文檔基本上也適用於 MkIV。現在，\ConTeXt\ 項目組現在正在組織進行新的 \ConTeXt\ 文檔撰寫，這個工程非常浩大，其意在於將這麼多年零散的文檔彙總到一起，並追隨 \CONTEXT\ 的最新進展，估計要到明年方能竣工。遠水解不了近渴，現在學習 \CONTEXT，還是要從 MKII 版本的文檔開始。
+
+作為初學者，{\it\ConTeXt, an excursion}\cite[ms-cb-en]文檔是官方製作的新手入門必讀文檔。\ConTeXt\ 的官方文檔通常是分為屏幕閱讀版本與打印版本，我讀的 {\it\ConTeXt, an excursion} 是屏幕閱讀版本，第一次打開這份文檔，就驚愕了一下，沒想到 PDF 文檔居然可以做得如此精緻。內容淺顯易懂，文檔版面美觀，我覺得 \ConTeXt\ 是非常禮遇初學者的。
+
+當讀過 {\it\ConTeXt, an excursion} 時\footnote{實際上我是用到什麼就去看什麼，現在大概看了有一半內容。}，就可以使用 \ConTeXt\ 排版手頭上正在寫作的一些文檔，其實這才是真正的開始學習 \CONTEXT。對於其它任何一種 \TEX\ 都是如此，只有真正開始使用它，才有可能掌握它。一開始，文檔的版面醜點沒關係，畢竟內容是最重要的。隨著對 \CONTEXT\ 的認識日益深刻，你的文檔便會愈發具備可觀賞性。在實踐的過程中，\CONTEXT\ 用戶手冊\cite[cont-eni]是主要的參考書。當你遇到不解的命令/參數，或者想瞭解一些命令更多的細節，都可以使用 PDF 閱讀器打開 \CONTEXT\ 用戶手冊，利用閱讀器提供的查詢功能找到你所感興趣的內容，並掌握它們。
+
+字體在排版中是決定版面美觀的重要因素，閱讀 \CONTEXT\ 新手冊中已經基本完工的 {\it fonts}\cite[fonts] 部分，便可以理解 \CONTEXT\ 的字體機制，你將獲得可以在 \CONTEXT\ 自如使用你喜歡的字體的能力；同時，我製作的那份 MkIV 中文字體配置文件也不再會令你感到困惑。
+
+若使用 \ConTeXt\ 排版時存在向量圖繪製需求，推薦使用 \METAPOST。不過，在 \ConTeXt\ 中，我們要面對的不是 \METAPOST，而是 \METAFUN\cite[metafun]，後者對前者進行了封裝，實現了 \CONTEXT\ 與 \METAPOST\ 的完美結合。{\it\ConTeXt, an excursion} 文檔版面之所以美觀，是因為在排版中大量使用 \METAFUN 來美化版面佈局的結果。
+
+若你對 \ConTeXt\ 已經有所認識，那麼 \ConTeXt\ Wiki\footnote{\type{http://wiki.contextgarden.net/Main_Page}} 是非常好的網絡學習資源。若有能力，可以在該 Wiki 上與整個世界的 \ConTeXt\ 用戶分享你的學習經驗；若暫時沒能力，可以選擇潛水。目前，我是這個 Wiki 眾多潛水員中的一名。
+
+目前，\CONTEXT\ MkIV 也許還存在許多的 bug，當你發現它們，應當提交 \CONTEXT\ 郵件列表\footnote{http://archive.contextgarden.net/list/context.en.html}中；當你使用 \CONTEXT\ 時有不解的問題，也可以去郵件列表中尋找答案。說來慚愧，我英文不好，並且不熟悉郵件列表的交流規則，所以一直都膽怯於郵件列表上的交流。
+
+介紹了以上學習資源之後，我開始如釋重負。以後再在這份文檔上摺騰，心裡就不會總是想著自己在寫一本 \CONTEXT\ 教程，那樣子很累，並且很容易喪失樂趣。這份筆記的真正的意圖是自我備忘，將它投放到網絡上，是希望我的經驗能夠對他人有所幫助並且能夠一同學習、討論 \CONTEXT\ 排版知識。
+
+\vfil
+\midaligned{\color[gray]{\bfa Just for fun!}}
+
+\stopcomponent
+

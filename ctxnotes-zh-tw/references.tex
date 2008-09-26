@@ -1,0 +1,366 @@
+\startcomponent bibliography
+\product ctxnotes
+\chapter{引用}
+
+\placecontent
+    [alternative=a,
+     style=normal,
+     pagenumber=no,
+     margin=2em]
+
+\blank
+
+當我用我這個代號來進行對話的同時，你的代號也是我，這意味著什麼呢？這是否意味著你就是我，而我也就是你？
+
+\section{目錄}
+
+如果不那麼在乎目錄的樣式，可以在期望插入目錄之處添加：
+
+\startniceTEX
+\completecontent
+% 或者
+\placecontent
+\stopniceTEX
+
+\noindent \tex{completecontent} 與 \tex{placecontent} 的區別就是前者是生成的目錄列表頁面是帶有標題的；而後者只生成目錄列表，如果需要頁面帶有標題，可以使用 \tex{title} 之類的無編號的標題命令實現:
+
+\startniceTEX
+\title{目錄}
+\placecontent
+    [alternative=a,
+     style=normal,
+     numberstyle=bold]
+\stopniceTEX
+
+在章標題之後使用 \tex{placecontent}：
+
+\startniceTEX
+\chapter{引用}
+\placecontent
+    [alternative=a,
+     style=normal,
+     pagenumber=no,
+     margin=2em]
+\stopniceTEX
+
+\noindent 可以實現在當前章標題下面顯示出這一章所有小節的列表。只是比較怪異，條目的顏色居然不一樣。好在使用自由軟件多年，我已經能夠容忍這些小問題了。
+
+由於我比較喜歡 \CONTEXT\ 手冊的那種目錄樣式，便從手冊的源碼中找到了該樣式的具體設置，然後照虎畫貓一番，並添加了一些小創意：
+
+\startniceTEX
+\def\ChapterNumber#1{\doiftext{#1}{第\;#1\;章\quad}}
+\setuplist
+    [chapter]
+    [alternative=a,
+     before={\page[preference]\blank},
+     after=\blank,
+     style=bold,
+     width=fit,
+     pagestyle=boldslanted,
+     pagenumber=no,
+     numbercommand=\ChapterNumber]
+
+\def\PageNumber#1{\color[darkgray]{#1}.}
+\setuplist
+    [section]
+    [alternative=d,
+     style=small,
+     pagecommand=\PageNumber,
+     pagestyle=\itx]
+\stopniceTEX
+
+\noindent 
+
+\noindent 結果便是這份文檔目錄頁中所顯示的那個樣子。我所說得小創意，實際上就是讓章節編號變成半中文化（因為還夾著阿拉伯語呢）；另外就是讓目錄列表中各小節的頁碼顯示為灰色，不那麼搶眼。
+
+\section[cross references]{交叉引用}
+
+交叉引用實在是太有用了，即便也不怎麼經常用到它，也還可以借此嘲笑一下 Word 交叉引用功能的孱弱，贏得一次口水戰的勝利。
+
+這份文檔的頁腳的右側的「回目錄」鏈接就是通過交叉引用來實現的，在\in[HFer]{} 節（瞧，這就是一個交叉引用）中的頁腳設置：
+
+\startniceTEX
+\setupfootertexts
+        [{\ConTeXt\ MkIV 學習筆記}][{\goto{回目錄}[content]}]
+        [{\goto{回目錄}[content]}][{\ConTeXt\ MkIV 學習筆記}]
+\stopniceTEX
+
+\noindent 其中，\tex{goto} 這個命令可以跳到任何設置了引用的文檔位置。這裡，它要跳到 \type{content} 引用所在的位置，由於這個引用我是在設置目錄頁面時設定的：
+
+\startniceTEX
+\startfrontmatter
+    \setuppagenumbering
+        [conversion=romannumerals]
+    \title[Content]{目錄} % 在此設定了引用
+    \placecontent
+\stopfrontmatter
+\stopniceTEX
+
+\noindent 因此 \tex{goto} 會帶你跳到目錄頁。目錄頁面的引用是通過 \type{content} 這個名稱標識的，\tex{goto} 命令可以根據這個標識確定所要跳往的頁面位置。
+
+\CONTEXT\ 許多排版命令都支持引用設置，譬如章節標題、插圖、表格等命令。一定要記住，文檔中只要出現諸如「第 xxx 章」、「xxx 節」、「圖 xxx」、「表 xxx」之類的內容時，這就意味著您應當使用交叉引用機制了。比如，我要引用當前這一節，首先要為節標題命令設定引用名稱：
+
+\startniceTEX
+\section[cross references]{交叉引用}
+\stopniceTEX
+
+\noindent 然後在需要引用本節之處，通過 \tex{in} 命令即可獲取節號；如果是屏幕閱讀文檔，還可以讓節號作為一個鏈接，指向本節所在頁面位置。同類的命令還有 \tex{at} 與 \tex{about}，前者可以獲取引用所在的頁面，後者可以得到引用的內容。下面仿照 \CONTEXT\ 手冊中的例子，演示這三個命令的用法：
+
+\startniceTEX
+我引用了第 \at[cross references] 頁的 \in[cross references] 節\about[corss references]的一些內容。
+\stopniceTEX
+
+\noindent 效果：{\ss 我引用了第 \at[cross references] 頁的 \in[cross references] 節 \about[cross references]的一些內容。}
+
+現在，MkIV 還未能實現引用在頁面的準確定位，所以在屏幕閱讀文檔中的一些鏈接只是將你帶往這些引用所在的頁面而不是將準確的位置展示在你眼前。
+
+\section{索引}
+
+在閱讀 {\it \CONTEXT\ 手冊}或者 {\it \CONTEXT, an excursion} 之類的文檔時，在附錄中可以看到許多命令的索引，這些索引會告訴你那些命令在哪些頁面出現了；如果是屏幕閱讀文檔，還可以將頁碼變成指向對應頁面的鏈接。利用這些索引功能，我可以快速找到這些命令的細節知識。這在寫技術文檔時非常重要。在這份文檔中，我沒有使用索引的功能，因為很少有人會為了一份學習筆記如此大動干戈。將它記述於此，僅僅是為了將來有可能使用到它。
+
+要定義索引很簡單，使用\tex{index} \index[index]{\tex{index}} 這個命令就可以：
+
+\startniceTEX
+我在這裡演示 index\index[index]{\tex{index}} 與
+ placeindex\index[placeindex]{\tex{placeindex}} 命令的用法。
+
+\placeindex
+\stopniceTEX
+
+\noindent 然後使用 \tex{placeindex}\index[placeindex]{\tex{placeindex}} 或 \tex{completeindex}\index[completeindex]{\tex{completeindex}} 命令在需要放置索引的頁面顯示索引。
+
+索引列表默認是以字母進行分組與排序的，這對於西文文檔排版很適用，但是沒法處理中文。可以採用漢語拼音\index[HYPY]{漢語拼音}來解決這個問題。譬如：
+
+\startniceTEX
+……可以採用漢語拼音\index[HYPY]{漢語拼音}來解決這個問題……
+\stopniceTEX
+
+\noindent 生成的索引列表如下：
+
+\placeindex
+
+索引與目錄的用法很相似。實際上這一章中所有的內容都是基於 \CONTEXT\ 的引用機制實現的。索引與目錄存在著更為高級的用法，但是我沒有那麼多興趣和精力去折騰它們，以後若有這方面的需要再下手也不遲。
+
+\section{參考文獻}
+
+寫科技文檔必然離不開參考文獻 (Bibliography) 的支撐，所以要評價一個文檔排版軟件的優劣，其參考文獻管理功能是一項非常重要的指標。與 \LaTeX\ 類似，\ConTeXt\ 主要是基於 Bib\TeX\ 維護參考文獻，這是借助 Taco Hoekwater 寫的 t-bib.tex 模塊來實現的。
+
+\subsubject{Bib\TEX}
+
+Bib\TeX\ 的主要功能是管理參考文獻信息並提供排版格式。在使用 Bib\TeX\ 之前，用戶需要建立參考文獻數據庫，不要害怕，這裡的數據庫實際上就是一個擴展名為 .bib 的文本文件，我們在其中記錄文獻信息。下面是一份 .bib 文件示例：
+
+\startTEX
+@book{諸葛專著2008,
+    author      = "諸葛亮",
+    year        = "2008",
+    title       = "木牛流馬製造工藝 [M]",
+    publisher   = "蜀國機械工業出版社"
+};
+
+@article{諸葛論文2008,
+    author      = "諸葛亮",
+    title       = "論伐魏的必要性與可行性 [J]",
+    journal      = "蜀國軍事",
+    volume      = "13",
+    number      = "110",
+    year        = "2007"
+}
+\stopTEX
+
+在文獻數據庫中，可以存儲許多種文獻類別，常用條目類型有 article、book、conference、manual、misc、techreport 等。每種參考文獻類別由多個域組成，有些是必須寫得，沒寫會給出警告，而有些是可選。譬如 book 類別中，不可省略的域有 author, title, journal, year，可省略的域有 volume, number, pages, month, note。推薦做法是在參考文獻數據庫中儘可能地提供文獻的詳細信息。關於 .bib 文件的格式說明，請參考 Bib\TeX\ 文檔\cite[bibtex]。
+
+Bib\TeX\ 為便於用戶管理參考文獻列表的排版風格，提供了 .bst 文件。.bib 文件與 .bst 文件之間的關係宛若 HTML 與 CSS 之間的關係，它們都遵守內在數據與外在表現分離的遊戲規則。用戶在 .bst 文件中可使用 Bib\TeX\ 定義的一種微型語言來實現對參考文獻列表風格的控制，但是在 \ConTeXt\ 的 bib 模塊中，僅使用 .bst 文件控制參考文獻條目的排列次序。一般情況下，用戶不需要製作 .bst，所以這個瞭解一下就可以了。
+
+Bib\TeX\ 與 \ConTeXt\ 的協同工作時，需要 \ConTeXt\ 文檔編譯命令輸出 .aux 文件。基於 .aux 文件，Bib\TeX\ 在 .bib 檢索所需的文獻信息，並結合 .bst 文件實現參考文獻列表外觀控制，最終輸出 .bbl 文件。一旦我們得到了 .bbl 文件（實際是 \TeX\ 文檔），那麼就可以繼續進行 \ConTeXt\ 文檔編譯過程，最終輸出帶有參考文獻信息的文檔，這一工作流程如下圖所示。
+
+\setupFLOWcharts[nx=4,ny=4,
+  dx=\bodyfontsize,dy=\bodyfontsize,
+  width=7.5\bodyfontsize, height=4\bodyfontsize,
+  maxwidth=\textwidth]
+
+\startFLOWchart[bibtex-flow]
+
+\startFLOWcell
+\name{texfile}\location{1,2}\shape{singledocument}
+\text{\ConTeXt\ 源文檔}\connection[rl]{ctx}
+\stopFLOWcell
+
+\startFLOWcell
+\name{ctx}\location{2,2}\shape{action}
+\text{編譯 \ConTeXt\ 文檔}\connection[rl]{aux}
+\stopFLOWcell
+
+\startFLOWcell
+\name{aux}\location{3,3}\shape{singledocument}
+\text{.aux 文檔}\connection[rln]{bibtex}
+\stopFLOWcell
+
+\startFLOWcell
+\name{bib}\location{3,1}\shape{singledocument}
+\text{.bib 文檔}\connection[rlp]{bibtex}
+\stopFLOWcell
+
+\startFLOWcell
+\name{bst}\location{3,2}\shape{singledocument}
+\text{.bst 文檔}\connection[rl]{bibtex}
+\stopFLOWcell
+
+\startFLOWcell
+\name{bibtex}\location{4,2}\shape{action}
+\text{Bib\TeX}\connection[bt]{bbl}
+\stopFLOWcell
+
+\startFLOWcell
+\name{bbl}\location{4,4}\shape{singledocument}
+\text{.bbl 文檔}\connection[lr]{ctxagain}
+\stopFLOWcell
+
+\startFLOWcell
+\name{ctxagain}\location{3,4}\shape{action}
+\text{編譯 \ConTeXt\ 文檔}\connection[lr]{pdf}
+\stopFLOWcell
+
+\startFLOWcell
+\name{pdf}\location{2,4}\shape{singledocument}
+\text{含參考文獻的 PDF 文檔}
+\stopFLOWcell
+
+\stopFLOWchart
+\placefigure[here][fig:bibtex-flow]{Bib\TeX\ 工作過程}
+            {\FLOWchart[bibtex-flow]}
+
+\subsubject{\ConTeXt\ 的 bib 模塊}
+
+\ConTeXt\ 是通過 Taco 寫的 bib 模塊取得 Bib\TeX\ 的協同，用戶可以在 \ConTeXt\ 文檔中實現參考文獻列表排版樣式的設置。下面是一份最為簡單的 \ConTeXt\ 參考文獻示例文檔 \type{example/ex-4.tex}：
+
+\startTEX
+% 設置中文字體
+\usetypescriptfile[zhfonts]
+\usetypescript[myfont]
+\setupbodyfont[myfont,rm,11pt]
+
+\usemodule[bib] % 啟用 bib 模塊
+\setupbibtex[database=example]
+
+\starttext
+這一年，諸葛亮同學出版了一本專著\cite[諸葛專著2008]，並在核心學術期刊上發表了一篇論文\cite[諸葛論文2008]，因此深得劉備的賞識。
+\completepublications
+\stoptext
+\stopTEX
+
+上例中 \tex{setupbibtex} 命令的 \type{database} 參數的值為 .bib 文件名，我是將上一節中的那個 .bib 文件命名為 example.bib，然後在此使用。\tex{completepublications} 命令會在所排版的文檔中插入參考文獻列表。
+
+編譯上述示例文檔的過程正如圖 \in[fig:bibtex-flow] 所示的那樣，需要三個處理步驟，如下：
+
+\starttyping
+$ context --once ex-4    # 產生 .aux 文檔
+$ bibtex ex-4            # 產生 .bbl 文檔
+$ context ex-4           # 完成文檔編譯
+\stoptyping
+
+如果嫌每次編譯文檔都要重複輸入三次命令過於繁瑣，花上 20 分鐘學習一下 Makefile 的簡單用法會讓我們更輕鬆一些。
+
+查看一下帶有參考文獻的 PDF 文檔，可能你會發現參考文獻並非是我們常見的那種風格，不要著慌，\ConTeXt\ 提供了一些用於設置參考文獻風格的命令供我們使用。下面對 \type{ex-4.tex} 文件略作修改，添加了 \tex{setuppublications} 代碼：
+
+\startTEX
+...
+\usemodule[bib] % 啟用 bib 模塊
+\setupbibtex[database=example]
+\setuppublications[alternative=num]
+...
+\stopTEX
+
+重新編譯一次 \type{ex-4.tex} 文檔\footnote{若是未有改動 .bib 文檔或者未引用新的文獻，只需使用常規 \ConTeXt\ 文檔編譯方式即可。}，現在參考文獻的樣式基本符合我們常見的風格了。有關 \tex{setuppublications} 命令的詳細用法請參考 bib 模塊文檔\cite[Taco]。
+
+\subsubject{Zotero}
+
+Zotero 是 Firefox 的一款擴展 (Extension)，號稱是下一代研究工具\footnote{至於上一代是誰，不可考，也許是那些脫離網絡環境的文獻管理軟件吧。}，我使用它來管理參考文獻數據。除 Zotero 之外，還有許多其它文獻管理軟件，比如 Endnote、RefWorks、jabref 等，與它們相比，Zotero 將我們進行文獻管理的整個過程──蒐集、整理、閱讀和引用等步驟都很好地集成在一起，並且與 Firefox 取得完美的結合，莫要忘記我們通常要在網上尋找文獻的。關於 Zotero 的詳情見其項目主頁\footnote{\type{http://www.zotero.org/}}。
+
+大多數情況下，使用 Zotero 的流程可以歸納為：在互聯網上發現文獻──利用導入功能得到文件信息和有關附件──製作文獻閱讀筆記、tag 以及相關文件鏈接──搜索文獻──輸出有關文獻為其他軟件格式──在 TeX 或字處理軟件中引用。除最後一步外都不需要打開任何其他軟件。
+
+關於 Zotero 的具體用法……咳咳……實在不知道該如何用文字來講述一款 GUI 工具的使用，又不勝一副一副配圖介紹的那般繁瑣。自我開脫一下，畢竟這是一份個人學習筆記，而不是一份教材，所以推薦去看 Zotero 的操作視頻教程\footnote{\type{http://www.zotero.org/videos/tour/zotero_tour.htm}}。
+
+\subsubject{設置參考文獻列表的樣式}
+
+在製作這份學習筆記的參考文獻時，因為有一些文獻來自於網絡，我希望在參考文獻列表中提供它們的網址 (URL) 並且要求是超級鏈接格式的，這樣便於讀者直接驅動網頁瀏覽器去下載它們。按照 Bib\TeX\ 的 .bib 文檔語法，我採用以下文獻條目格式提供此類文獻的信息：
+
+\startTEX
+@booklet{Taco,
+  title = {{Bibliographies}},
+  author = {Taco Hoekwater},
+  url = {http://modules.contextgarden.net/bib}
+}
+\stopTEX
+
+但是在文檔中去引用上述文獻時，其 URL 信息無法在參考文獻列表中顯示，更談不上超級鏈接格式了。在 \ConTeXt\ Wiki 中的 Bibliography 文檔\cite[TacoCTXWiki]中講述了如何在參考文獻中啟用 URL 的方法，並提供了一個示例。我對這個示例進行了一些簡化，貴在於理解其要義。將以下代碼添加到文檔導言區，位於 bib 模塊加載及其設置代碼區域的下面：
+
+\startTEX
+\unprotect
+\setuppublicationlayout[booklet]{%
+   \insertauthors{}{\unskip.}{}%
+   \inserttitle{ \bgroup\it }{\/\egroup\unskip.}{}%
+   \insertbiburl{ URL: }{\unskip.}{}%
+   \insertnote{ }{\unskip.}{}}
+\protect
+\stopTEX
+
+\tex{setuppublicationlayout} 命令是用於設置參考文獻列表的排版佈局的，上例中，其參數我設為 booklet，這是因為我在 .bib 文檔中將將網絡文檔類型定義為 booklet（小冊子）類型，它是 Bib\TeX\ 的標準文獻條目類型之一，將其作為 \tex{setuppublicationlayout} 的參數，表示這裡要設置該類型文獻條目的排版風格。
+
+在這份筆記中，我只需要 booklet 條目由 author（作者）、title（標題）、URL（文獻網址）以及 note（文獻註解）附加註釋信息構成，因此在設置 booklet 文獻條目的排版風格時，對於每一條目要素都對應一個 \tex{insertxxx} 命令。\tex{insertxxx} 命令有三個參數，可用於設定每一文獻條目構成要素的排版環境，前兩個參數分別用於設置對應排版文獻條目構成要素的前後排版命令，第三個參數用於設置對應的文獻條目構成要素預設狀態。以 \type{\insertauthors{}{\unskip.}{}} 為例，第一個參數是空的，表示採用默認排版環境；第二個參數為 \type{\unskip.}，表示消除 booklet 文獻條目中作者信息之後的空格，並且添加句點，第三個參數為空，表示當 .bib 文件中的 booklet 條目未提供作者信息時不作任何處理。
+
+注意，在上述示例中，\tex{insertbiburl} 命令是啟來 .bib 中所提供的文獻 URL 信息的。如果你希望文檔中的 URL 是超級鏈接格式，那麼還需要在 \ConTeXt\ 文檔導言區添加以下代碼：
+
+\startTEX
+\setupinteraction[state=start] % 啟用文檔的可交互功能
+\stopTEX
+
+利用上述方法並配合 \ConTeXt\ 各種排版命令可以靈活地控制參考文獻列表的排版格式，這就是為什麼 \ConTeXt\ 的 bib 模塊只是將 Bib\TeX\ 的 .bst 文檔用來實現參考文獻列表排序的主要原因。
+
+\section{書籤}
+
+在閱讀很長的 PDF 文檔時，書籤 (Bookmark) 是很有用的，它們通常顯示於 PDF 閱讀器的側欄，用戶用鼠標點擊書籤就可以快速打開書籤所指向的頁面。對於如何使用 \CONTEXT\ 實現書籤，由於我是沒有耐心的人，所以看到 \ConTeXt\ Wiki 上提供了適合沒耐心的人對文檔書籤的生成快速建立初步認識的代碼，便直接抄過來：
+
+\startniceTEX
+% 啟用書籤功能
+\setupinteraction[state=start]
+\setupinteractionscreen[option=bookmark]
+\placebookmarks[chapter][chapter]
+
+\starttext
+\chapter{飛刀與快劍}
+冷風如刀，以大地為砧板，視眾生為魚肉。\par
+萬里飛雪，將穹廬作洪爐，熔萬物為白銀。\par
+……
+\chapter{海內存知己}
+馬車裡堆著好幾罈酒，這酒是那少年買的，
+所以他一碗又一碗地喝著，而且喝得很快。\par
+……
+\stoptext
+\stopniceTEX
+
+\noindent 用常規的 PDF 閱讀器打開所生成的文檔，若開啟側欄面板，應當可以看到書籤了。如果你看不到，那麼就見識一下圖 \in{}[fig:bookmark]\quad。
+
+\placefigure[here][fig:bookmark]
+        {帶書籤的 PDF 文檔}
+        {\externalfigure[bookmark][bookmark][width=.6\textwidth]}
+
+要開啟 \ConTeXt\ 的書籤功能，必須 \tex{setupinteraction[state=start]}。另外，PDF 閱讀器的側欄的書籤窗口默認是隱藏的，要讓閱讀器打開文檔時自動開啟書籤窗口，那就是上例中 \tex{setupinteractionscreen} 命令所做的。
+
+將章、節標題作為書籤的想法很好，這樣在書籤窗口中，可以通過章節標題對文檔的大致內容有所瞭解。在上例中，我通過 \tex{placebookmarks} 命令設置 chapter 標題作為書籤。\tex{placebookmarks} 的第一個參數是設定各層次的章節類型作為書籤，第二個參數是設置默認可見的書籤。看下面一個更複雜的示例：
+
+\startTEX
+\placebookmarks[chapter,section,subsection][chapter]
+\stopTEX
+
+\noindent 這個示例的含義是：將章、節、小節的標題作為書籤，默認只在書籤窗口中顯示由章標題生成的書籤。
+
+在 MkIV 中，不知是特性還是缺陷，在將章節標題作為書籤時，若標題中出現了格式化文本，譬如 \type{\ConTeXt} 這樣的文本，那麼書籤中就會將 \type{\ConTeXt} 的 \TeX\ 定義顯示出來，而不是顯示 \type{ConTeXt} 或者 \ConTeXt。現在，我未能找到解決這一問題的好方法，笨方法是有的。在撰寫某章節標題時，若是需要使用格式化文本，那麼就在章節命令之後使用 \tex{bookmark} 命令手動設定書籤標題：
+
+\startTEX
+\section{安裝 \ConTeXt\ Minimals}
+\bookmark{安裝 ConTeXt Minimals}
+\stopTEX
+
+\noindent 本文檔目前正是使用這種方法去除書籤中出現的格式化文本，勉強對付過去。
+\stopcomponent
+

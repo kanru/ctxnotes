@@ -1,0 +1,143 @@
+\startenvironment doc-env
+
+\usemodule[chart]
+\usemodule[t][layout]
+\usemodule[bib]
+
+\usetypescriptfile[zhfonts]
+\usetypescript[myfont]
+\setupbodyfont[myfont,rm,10pt]
+
+\setupcolors[state=start]
+\setupcolor[hex]
+
+\setupinteraction
+        [state=start,
+         color=darkblue,
+         title={ConTeXt 学习笔记},
+         subtitle={Using MkIV},
+         author={Li Yanrui},
+         keyword={TeX, ConTeXt, MkIV, LuaTeX}]
+
+\setupinteractionscreen[option=max]
+
+\setuppapersize[S6][S6]
+\setuplayout[width=fit,height=middle,
+             leftmargin=2cm,rightmargin=2cm,
+             backspace=2.7cm,topspace=.5cm,
+             headerdistance=.4cm,footerdistance=.4cm,
+             header=1cm,footer=1cm]
+\setuppagenumbering[style=\tfx,location=]
+
+\setuptolerance[horizontal, stretch]
+
+% 图片目录
+\setupexternalfigures[directory={./figures}]
+
+%-------- 标题设置 --------
+\setupheads[indentnext=yes]
+
+\setuphead[title][style=\bfb,header=empty,foote=empty]
+\setuphead[chapter]
+          [style=\bfb,header=empty,footer=empty]
+\setuphead[section][style=\bfa]
+\setuphead[subsubject][style=\bf]
+
+% 代码环境
+\setuptyping[option=color,palet=graypretty,margin=2em,
+			 before={\blank[.5em]\setupinterlinespace[medium]},
+        	 after={\blank[.5em]}]
+
+\definetyping[niceTEX][option=TEX,palet=graypretty]
+
+%-------- 中文化 --------
+\setuplabeltext [en] [chapter={第\;,\;章}]
+\setuplabeltext [en] [figure=图\;]
+\setuplabeltext [en] [table=表\;]
+\setupheadtext[en][pubs={\bfc 参考文献}]
+\setupheadtext[en][content={\bfc 目录}]
+
+%% 目录 %%
+\def\ChapterNumber#1{\doiftext{#1}{第\;#1\;章\quad}}
+\setuplist
+    [chapter]
+    [alternative=a,
+     before={\page[preference]\blank},
+     after=\blank,
+     style=\bfx,
+     width=fit,
+     pagestyle=boldslanted,
+     pagenumber=no,
+     numbercommand=\ChapterNumber]
+
+\def\Number#1{\$ #1}
+\def\PageNumber#1{\color[darkgray]{#1}.}
+\setuplist
+    [section]
+    [alternative=d,
+     style=small,
+     numbercommand=\Number,
+     pagecommand=\PageNumber,
+     pagestyle=\itx]
+
+% 页眉页脚
+\startsetups HeaderFooter
+        \def\CurrentChapter{%
+                第 \headnumber[chapter]\ 章%
+                \hbox to 2em{}%
+                \getmarking[chapter]%
+                }
+        \def\CurrentSection{%
+                \headnumber[section]%
+                \hbox to 2em{}%
+                \getmarking[section]%
+                }
+        \setupheadertexts
+                [\CurrentChapter][pagenumber]
+                [pagenumber][\CurrentSection]
+        \startmode[screen]
+                \setupfootertexts[{\ConTeXt\ 学习笔记}][{\goto{\bfx 目录}[Content]}]
+                	           [{\goto{\bfx 目录}[Content]}][{\ConTeXt\ 学习笔记}]
+        \stopmode
+        \setupheader[style=\bfx,color=darkgray]
+        \setupfooter[style=\bfx,color=darkgray]
+\stopsetups
+
+% 书签
+\setupinteractionscreen[option=bookmark]
+\placebookmarks[chapter,section][chapter]
+
+% 参考文献
+\setupbibtex[database=bibliography]
+\setuppublications[alternative=num]
+
+\setuppublicationlayout[booklet]{%
+   \insertauthors{}{\unskip.}{}%
+   \inserttitle{ \bgroup\it }{\/\egroup\unskip.}{}%
+   \insertbiburl{ URL: }{\unskip.}{}%
+   \insertnote{ }{\unskip.}{}}
+
+\setuppublicationlayout[manual]{%
+   \insertauthors{}{\unskip.}{}%
+   \inserttitle{ \bgroup\it }{\/\egroup\unskip.}{}%
+   \insertbiburl{ URL: }{\unskip.}{}%
+   \insertnote{ }{\unskip.}{}}
+
+%---- 其它一些零碎设置 ----
+\setupinterlinespace[big]
+\setupindenting[always,first,2em]
+
+\setupfloats[indentnext=yes] 
+\setupcaptions[style=\tfx, headstyle=\normal]
+
+\definesymbol[1][$\textbullet$]
+\setupitemize[each][packed, joinedup,serried][symbol=1, margin=2em]
+
+\setupfootnotes[way=bychapter]
+
+\setupinmargin[left,right][style=\tfx]
+
+\definedescription[definition]
+        [location=top,hang=20,width=broad,indenting=always,style=\ss,headstyle=\bf]
+
+\stopenvironment
